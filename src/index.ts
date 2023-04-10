@@ -1,4 +1,4 @@
-import puppeteer, { Page } from "puppeteer"
+import puppeteer, { Browser, Page } from "puppeteer"
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -11,11 +11,10 @@ const ACTIVIIES_BUTTON_XPATH = '/html/body/div[2]/div/div[1]/div/div[1]/div[1]/d
 const ACTIVIIES_BUTTON = 'body > div.full-height.ng-scope > div > div.ng-scope > div > div.container-fluid.relative > div.pull-left.full-height.visible-sm.visible-xs > div > ul > li:nth-child(4) > uni-acomp-atividades > a > span'
 const LIST_OF_LEARNING_UNITS = 'body > div.modal.stick-up.fade.ng-scope.ng-isolate-scope.in > div > div > div > div.table-responsive > table > tbody > tr > td.nowrap.p-b-10.p-t-10'
 
-async function login() {
+async function login(browser: Browser) {
 
     const { CPF, PASSWORD_VALUE } = process.env
 
-    const browser = await puppeteer.launch({headless: false})
     const page = await browser.newPage()
     await page.goto(URL)
 
@@ -27,10 +26,8 @@ async function login() {
 
     await page.click(LOGIN_BUTTON)
 
-    const warningButton = await page.$(WARNING_BUTTON)
-    if (await warningButton?.isIntersectingViewport()) {
-        await page.click(WARNING_BUTTON)
-    }
+    await page.waitForSelector(WARNING_BUTTON)
+    await page.click(WARNING_BUTTON)
 
     return page
 
@@ -45,14 +42,19 @@ async function getOpenLessons(page: Page) {
 
     await page.waitForSelector(LIST_OF_LEARNING_UNITS)
     const numberOfOpenLessons = await page.$$eval('[title="Atividades pendentes"]', materias => {
-        return materias.map(materia => Number(materia.textContent))
+        const listOfNumbers = materias.map(materia => Number(materia.textContent))
+        const uniqueValues = new Set(listOfNumbers)
+        return [...uniqueValues]
             .reduce((count, currentNumber) => count + currentNumber, 0)
     })
+
     return numberOfOpenLessons
 
 }
 
 (async () => {
-    const page = await login()
+    const browser = await puppeteer.launch({headless: false})
+    const page = await login(browser)
     console.log(await getOpenLessons(page))
+    await browser.close()
 })()
