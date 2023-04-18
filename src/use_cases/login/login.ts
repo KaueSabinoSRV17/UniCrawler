@@ -35,7 +35,5 @@ async function handleWarning(page: Page) {
             return page
         }
         throw new Error('Something went wrong while handling the warning message')
-    } finally {
-        return page
     }
 }
