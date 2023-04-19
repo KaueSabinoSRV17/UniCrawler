@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "dev": "nodemon --watch 'src/**/*' --exec 'ts-node' --ext 'ts,json' src/index.ts"
+    "dev": "nodemon --watch 'src/**/*' --exec 'ts-node' --ext 'ts,json' src/index.ts",
+    "start": "node dist/src/index.js",
+    "build": "npx tsc"
   },
   "keywords": [],
   "author": "",
